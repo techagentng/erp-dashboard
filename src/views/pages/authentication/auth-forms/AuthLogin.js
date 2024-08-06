@@ -143,7 +143,7 @@ const JWTLogin = ({ loginProp, ...others }) => {
                                         color="primary"
                                     />
                                 }
-                                label="Keep me logged in"
+                                label="Keep me logged"
                             />
                         </Grid>
                         <Grid item>

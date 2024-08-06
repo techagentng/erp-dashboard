@@ -268,7 +268,7 @@ const JWTRegister = ({ ...others }) => {
                                     size="large"
                                     type="submit"
                                     variant="contained"
-                                    color="secondary"
+                                    style={{ backgroundColor: '#de0a42' }}
                                 >
                                     Sign up
                                 </Button>
