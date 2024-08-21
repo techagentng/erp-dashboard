@@ -1,11 +1,11 @@
-import other from './other';
-import pages from './pages';
-import samplePage from './sample-page';
+// import other from './other';
+// import pages from './pages';
+import dashboard from './dashboard';
 
 // ==============================|| MENU ITEMS ||============================== //
 
 const menuItems = {
-    items: [samplePage, pages, other]
+    items: [dashboard]
 };
 
 export default menuItems;

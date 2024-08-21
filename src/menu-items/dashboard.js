@@ -12,11 +12,11 @@ const icons = {
     IconBrandChrome
 };
 const samplePage = {
-    id: 'sample-page',
-    title: <FormattedMessage id="sample-page" />,
+    id: 'dashboard',
+    title: <FormattedMessage id="dashboard" />,
     icon: icons.IconBrandChrome,
     type: 'group',
-    url: '/sample-page'
+    url: '/dashboard'
 };
 
 export default samplePage;
