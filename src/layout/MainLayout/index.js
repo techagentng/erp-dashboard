@@ -9,9 +9,9 @@ import { AppBar, Box, Container, CssBaseline, Toolbar, useMediaQuery } from '@mu
 import Header from './Header';
 import Sidebar from './Sidebar';
 import HorizontalBar from './HorizontalBar';
-import Breadcrumbs from 'ui-component/extended/Breadcrumbs';
+// import Breadcrumbs from 'ui-component/extended/Breadcrumbs';
 
-import navigation from 'menu-items';
+// import navigation from 'menu-items';
 import LAYOUT_CONST from 'constant';
 import useConfig from 'hooks/useConfig';
 import { drawerWidth } from 'store/constant';
@@ -19,7 +19,7 @@ import { openDrawer } from 'store/slices/menu';
 import { useDispatch, useSelector } from 'store';
 
 // assets
-import { IconChevronRight } from '@tabler/icons-react';
+// import { IconChevronRight } from '@tabler/icons-react';
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open, layout }) => ({
@@ -132,7 +132,7 @@ const MainLayout = () => {
             <Main theme={theme} open={drawerOpen} layout={layout}>
                 <Container maxWidth={container ? 'lg' : false} {...(!container && { sx: { px: { xs: 0 } } })}>
                     {/* breadcrumb */}
-                    <Breadcrumbs separator={IconChevronRight} navigation={navigation} icon title rightAlign />
+                    {/* <Breadcrumbs separator={IconChevronRight} navigation={navigation} icon title rightAlign /> */}
                     <Outlet />
                 </Container>
             </Main>

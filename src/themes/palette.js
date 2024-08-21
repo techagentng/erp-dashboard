@@ -2,7 +2,7 @@
 import { createTheme } from '@mui/material/styles';
 
 // assets
-import defaultColor from 'assets/scss/_themes-vars.module.scss';
+// import defaultColor from 'assets/scss/_themes-vars.module.scss';
 import theme1 from 'assets/scss/_theme1.module.scss';
 import theme2 from 'assets/scss/_theme2.module.scss';
 import theme3 from 'assets/scss/_theme3.module.scss';
@@ -35,7 +35,7 @@ const Palette = (navType, presetColor) => {
             break;
         case 'default':
         default:
-            colors = defaultColor;
+            colors = theme2;
     }
 
     return createTheme({

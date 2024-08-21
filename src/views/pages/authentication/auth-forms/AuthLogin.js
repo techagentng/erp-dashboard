@@ -168,6 +168,7 @@ const JWTLogin = ({ loginProp, ...others }) => {
                         <AnimateButton>
                             <Button
                                 style={{ backgroundColor: '#de0a42' }}
+                                // color="secondary"
                                 disabled={isSubmitting}
                                 fullWidth
                                 size="large"
