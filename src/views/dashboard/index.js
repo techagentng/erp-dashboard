@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import SubCard from 'ui-component/cards/SubCard';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
-import SimpleTabs from './SimpleTabs';
+import FileUploader from './FileUploader';
 import { gridSpacing } from 'store/constant';
 import ColorTabs from './ColorTabs';
 // ==============================|| SAMPLE PAGE ||============================== //
@@ -14,12 +14,12 @@ const SamplePage = () => (
             <Grid container spacing={gridSpacing}>
                 <Grid item xs={12} md={6}>
                     <SubCard title="Upload Trailer movie">
-                        <SimpleTabs />
+                        <FileUploader />
                     </SubCard>
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <SubCard title="Upload Fullength movie">
-                        <SimpleTabs />
+                        <FileUploader />
                     </SubCard>
                 </Grid>
             </Grid>

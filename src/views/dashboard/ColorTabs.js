@@ -88,7 +88,7 @@ export default function ColorTabs() {
                     icon={<PersonOutlineTwoToneIcon sx={{ fontSize: '1.3rem' }} />}
                     label={
                         <>
-                            Pending approvals{' '}
+                            Pending Trailers{' '}
                             <Chip
                                 label="8"
                                 size="small"
