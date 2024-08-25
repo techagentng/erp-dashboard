@@ -1,18 +1,17 @@
-import PropTypes from 'prop-types';
 import React from 'react';
+import { Box, Chip, Tab, Tabs } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
-// material-ui
-import { useTheme } from '@mui/material/styles';
-import { Box, Chip, Tab, Tabs, Typography } from '@mui/material';
-
-// assets
+// icons
 import PersonOutlineTwoToneIcon from '@mui/icons-material/PersonOutlineTwoTone';
 import PanoramaTwoToneIcon from '@mui/icons-material/PanoramaTwoTone';
 import PeopleAltTwoToneIcon from '@mui/icons-material/PeopleAltTwoTone';
 import RecentActorsTwoToneIcon from '@mui/icons-material/RecentActorsTwoTone';
 
-// tab content customize
+import FileItem from './FileItem'; // Import the FileItem component
+
+// TabPanel definition
 function TabPanel({ children, value, index, ...other }) {
     return (
         <div role="tabpanel" hidden={value !== index} id={`simple-tabpanel-${index}`} aria-labelledby={`simple-tab-${index}`} {...other}>
@@ -22,19 +21,14 @@ function TabPanel({ children, value, index, ...other }) {
                         p: 3
                     }}
                 >
-                    <Typography>{children}</Typography>
+                    {children}
                 </Box>
             )}
         </div>
     );
 }
 
-TabPanel.propTypes = {
-    children: PropTypes.node,
-    index: PropTypes.any.isRequired,
-    value: PropTypes.any.isRequired
-};
-
+// Tab properties for accessibility
 function a11yProps(index) {
     return {
         id: `simple-tab-${index}`,
@@ -42,11 +36,10 @@ function a11yProps(index) {
     };
 }
 
-// ================================|| UI TABS - COLOR ||================================ //
-
 export default function ColorTabs() {
     const theme = useTheme();
     const [value, setValue] = React.useState(0);
+
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
@@ -148,19 +141,18 @@ export default function ColorTabs() {
                 />
             </Tabs>
             <TabPanel value={value} index={0}>
-                Anim pariah&apos;s cliche reprehended, enid elusion high life accusals terry richardson ad squid. 3 wolf moon official auth,
-                non cuspidate skateboard dolor brunch.
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Trailer1.mp4" uploadDate="2024-08-20" />
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Trailer2.mp4" uploadDate="2024-08-19" />
             </TabPanel>
             <TabPanel value={value} index={1}>
-                Anim pariah&apos;s cliche reprehended, enid elusion high life accusals terry richardson ad squid. 3 wolf moon official auth,
-                non cuspidate skateboard dolor brunch. Food truck quinoa nescient labarum elusion.
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Trailer3.mp4" uploadDate="2024-08-18" />
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Trailer4.mp4" uploadDate="2024-08-17" />
             </TabPanel>
             <TabPanel value={value} index={2}>
-                Nihil anim keffiyeh helvetic, craft beer laborer wes anderson cred mesclun sapient ea provident. Ad vegan exceptive butcher
-                vice lome.
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Fullength1.mp4" uploadDate="2024-08-16" />
             </TabPanel>
             <TabPanel value={value} index={3}>
-                Nihil anim keffiyeh helmeting, craft beer labourer wes anderson cred mesclun sapiency ea provident.
+                <FileItem thumbnail="https://via.placeholder.com/100" filename="Fullength2.mp4" uploadDate="2024-08-15" />
             </TabPanel>
         </>
     );

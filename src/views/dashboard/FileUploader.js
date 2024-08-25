@@ -1,27 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { Box, Button, Modal, Typography, TextField, IconButton, Badge } from '@mui/material';
+import { Box, Button, Modal, Typography, TextField, IconButton, Badge, Grid, LinearProgress } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import CloudUploadTwoToneIcon from '@mui/icons-material/CloudUploadTwoTone';
 import CloseIcon from '@mui/icons-material/Close';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 export default function FileUploader() {
     const theme = useTheme();
     const [isDragging, setIsDragging] = useState(false);
-    const [file, setFile] = useState(null); // State for single file
-    const [multipleFiles, setMultipleFiles] = useState([]); // State for multiple image files
-    const [openModal, setOpenModal] = useState(false); // State to control modal visibility
+    const [file, setFile] = useState(null);
+    const [multipleFiles, setMultipleFiles] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
     const [modalFile, setModalFile] = useState(null);
-    const [formData, setFormData] = useState({
-        logLine: '',
-        productionYear: '',
-        star1: '',
-        star2: '',
-        star3: ''
-    });
-
+    const [showProgress, setShowProgress] = useState(false);
+    const [progressValue, setProgressValue] = useState(0); // Initial progress value
     const fileInputRef = useRef(null);
     const modalFileInputRef = useRef(null);
-    // Drag and drop handlers
+
     const handleDragOver = (e) => {
         e.preventDefault();
         setIsDragging(true);
@@ -36,7 +32,7 @@ export default function FileUploader() {
         setIsDragging(false);
         const droppedFiles = Array.from(e.dataTransfer.files);
         setMultipleFiles(droppedFiles);
-        setFile(droppedFiles[0]); // Assuming we treat the first file as the main one
+        setFile(droppedFiles[0]);
         setOpenModal(true);
     };
 
@@ -51,28 +47,6 @@ export default function FileUploader() {
         setModalFile(selectedModalFile);
     };
 
-    const handleSubmit = () => {
-        console.log('Submitted Data:', {
-            file,
-            multipleFiles,
-            ...formData
-        });
-        setModalFile(null); // Reset modal file after submission
-        handleCloseModal();
-    };
-    // Handle modal open and close
-    const handleOpenModal = () => setOpenModal(true);
-    const handleCloseModal = () => setOpenModal(false);
-
-    // Handle form data change
-    const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
-
-    // Handle file input change (for single or multiple files)
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
         setMultipleFiles(selectedFiles);
@@ -80,17 +54,49 @@ export default function FileUploader() {
         setOpenModal(true);
     };
 
+    const handleOpenModal = () => setOpenModal(true);
+    const handleCloseModal = () => setOpenModal(false);
+
+    const formik = useFormik({
+        initialValues: {
+            logLine: '',
+            productionYear: '',
+            star1: '',
+            star2: '',
+            star3: ''
+        },
+        validationSchema: Yup.object({
+            logLine: Yup.string().required('Log Line is required'),
+            productionYear: Yup.string().required('Production Year is required'),
+            star1: Yup.string().required('Star 1 is required'),
+            star2: Yup.string(),
+            star3: Yup.string()
+        }),
+        onSubmit: async (values) => {
+            setShowProgress(true); // Show progress bar on form submission
+            setProgressValue(45);  // Set progress value (placeholder)
+            
+            console.log('Submitted Data:', {
+                file,
+                multipleFiles,
+                ...values
+            });
+            setModalFile(null);
+            handleCloseModal();
+
+            // Simulate a delay before hiding the progress bar
+            setTimeout(() => {
+                setShowProgress(false);
+                setProgressValue(0); // Reset progress value
+            }, 183000);
+        }
+    });
+
     const handleUploadClick = () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
     };
-
-    // const handleUploadPoster = () => {
-    //     if (fileInputRef.current) {
-    //         fileInputRef.current.click();
-    //     }
-    // };
 
     return (
         <Box
@@ -107,7 +113,6 @@ export default function FileUploader() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
-            {/* Hidden file input */}
             <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} multiple />
 
             {!file ? (
@@ -130,7 +135,6 @@ export default function FileUploader() {
                 </Box>
             )}
 
-            {/* Modal with form */}
             <Modal open={openModal} onClose={handleCloseModal} aria-labelledby="file-modal-title" aria-describedby="file-modal-description">
                 <Box
                     sx={{
@@ -145,7 +149,6 @@ export default function FileUploader() {
                         p: 4
                     }}
                 >
-                    {/* Badge for file count */}
                     {multipleFiles.length > 0 && (
                         <Badge
                             badgeContent={multipleFiles.length}
@@ -158,16 +161,11 @@ export default function FileUploader() {
                             }}
                         />
                     )}
-
-                    <Typography id="file-modal-title" variant="h6" component="h2">
-                        File Upload Form
-                    </Typography>
                     <Typography id="file-modal-description" sx={{ mt: 2 }}>
                         Please fill in the details and submit.
                     </Typography>
 
-                    <Box component="form" sx={{ mt: 2 }}>
-                        {/* Picture Upload Preview */}
+                    <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 2 }}>
                         <Box
                             sx={{
                                 mb: 2,
@@ -199,8 +197,8 @@ export default function FileUploader() {
                         >
                             {!modalFile ? (
                                 <>
-                                    <Typography variant="h6" gutterBottom>
-                                        Drop an image file here or click to select a file
+                                    <Typography variant="h4" gutterBottom>
+                                        Drop poster
                                     </Typography>
                                     <IconButton aria-label="upload" size="large" onClick={handleModalUploadClick}>
                                         <CloudUploadTwoToneIcon sx={{ fontSize: '2rem' }} />
@@ -221,55 +219,80 @@ export default function FileUploader() {
                                 </Box>
                             )}
                         </Box>
-                        {/* Form Fields */}
-                        <TextField
-                            fullWidth
-                            label="Log Line"
-                            name="logLine"
-                            value={formData.logLine}
-                            onChange={handleInputChange}
-                            margin="normal"
-                        />
-                        <TextField
-                            fullWidth
-                            label="Production Year"
-                            name="productionYear"
-                            value={formData.productionYear}
-                            onChange={handleInputChange}
-                            margin="normal"
-                        />
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="Log Line"
+                                    name="logLine"
+                                    value={formik.values.logLine}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    margin="normal"
+                                    error={formik.touched.logLine && Boolean(formik.errors.logLine)}
+                                    helperText={formik.touched.logLine && formik.errors.logLine}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="Production Year"
+                                    name="productionYear"
+                                    value={formik.values.productionYear}
+                                    onChange={formik.handleChange}
+                                    onBlur={formik.handleBlur}
+                                    margin="normal"
+                                    error={formik.touched.productionYear && Boolean(formik.errors.productionYear)}
+                                    helperText={formik.touched.productionYear && formik.errors.productionYear}
+                                />
+                            </Grid>
+                        </Grid>
                         <TextField
                             fullWidth
                             label="Star 1"
                             name="star1"
-                            value={formData.star1}
-                            onChange={handleInputChange}
+                            value={formik.values.star1}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                             margin="normal"
+                            error={formik.touched.star1 && Boolean(formik.errors.star1)}
+                            helperText={formik.touched.star1 && formik.errors.star1}
                         />
                         <TextField
                             fullWidth
                             label="Star 2"
                             name="star2"
-                            value={formData.star2}
-                            onChange={handleInputChange}
+                            value={formik.values.star2}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                             margin="normal"
                         />
                         <TextField
                             fullWidth
                             label="Star 3"
                             name="star3"
-                            value={formData.star3}
-                            onChange={handleInputChange}
+                            value={formik.values.star3}
+                            onChange={formik.handleChange}
+                            onBlur={formik.handleBlur}
                             margin="normal"
                         />
 
-                        {/* Submit Button */}
-                        <Button variant="contained" onClick={handleSubmit} sx={{ mt: 2, float: 'right' }}>
+                        <Button type="submit" variant="contained" color="primary" fullWidth sx={{ mt: 2 }}>
                             Submit
                         </Button>
                     </Box>
                 </Box>
             </Modal>
+
+            {/* Progress bar section */}
+            {showProgress && (
+                <Box sx={{ width: '100%', mt: 2 }}>
+                    <LinearProgress variant="determinate" value={progressValue} />
+                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        {progressValue}% Uploaded
+                    </Typography>
+                </Box>
+            )}
         </Box>
     );
 }
