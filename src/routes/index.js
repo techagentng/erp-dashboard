@@ -5,14 +5,15 @@ import MainRoutes from './MainRoutes';
 import LoginRoutes from './LoginRoutes';
 import AuthenticationRoutes from './AuthenticationRoutes';
 import Loadable from 'ui-component/Loadable';
-const PagesLanding = Loadable(lazy(() => import('views/pages/landing')));
+// const PagesLanding = Loadable(lazy(() => import('views/pages/landing')));
+const Login = Loadable(lazy(() => import('views/dashboard')));
 
 // ==============================|| ROUTING RENDER ||============================== //
 
 // const router = createBrowserRouter({ path: '/', element: <PagesLanding /> }, [LoginRoutes, AuthenticationRoutes, MainRoutes], { basename: process.env.REACT_APP_BASE_NAME });
 // export default router;
 
-const router = createBrowserRouter([{ path: '/', element: <PagesLanding /> }, AuthenticationRoutes, LoginRoutes, MainRoutes], {
+const router = createBrowserRouter([{ path: '/', element: <Login /> }, AuthenticationRoutes, LoginRoutes, MainRoutes], {
     basename: process.env.REACT_APP_BASE_NAME
 });
 
