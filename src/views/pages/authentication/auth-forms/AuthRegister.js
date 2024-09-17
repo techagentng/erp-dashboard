@@ -82,43 +82,69 @@ const JWTRegister = ({ ...others }) => {
 
             <Formik
                 initialValues={{
+                    profile_image: '',
+                    fullName: '',
+                    userName: '',
+                    telephone: '',
                     email: '',
                     password: '',
-                    firstName: '',
-                    lastName: '',
                     submit: null
                 }}
                 validationSchema={Yup.object().shape({
+                    fullName: Yup.string().max(255).required('Full Name is required'),
+                    userName: Yup.string().max(255).required('Username is required'),
+                    telephone: Yup.string().max(15).required('Phone number is required'),
                     email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
                     password: Yup.string().max(255).required('Password is required')
                 })}
                 onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
                     try {
-                        await register(values.email, values.password, values.firstName, values.lastName);
-                        if (scriptedRef.current) {
-                            setStatus({ success: true });
-                            setSubmitting(false);
-                            dispatch(
-                                openSnackbar({
-                                    open: true,
-                                    message: 'Your registration has been successfully completed.',
-                                    variant: 'alert',
-                                    alert: {
-                                        color: 'success'
-                                    },
-                                    close: false
-                                })
-                            );
+                        const response = await register(values.fullName, values.userName, values.telephone, values.email, values.password);
+                        console.log('Response receivedREG:', response);
 
-                            setTimeout(() => {
-                                navigate('/login', { replace: true });
-                            }, 1500);
+                        if (scriptedRef.current) {
+                            if (response.errors) {
+                                // If there are errors in the response, set them and mark registration as unsuccessful
+                                setErrors({ submit: response.errors });
+                                setStatus({ success: false });
+                                setSubmitting(false);
+                            } else {
+                                // If no errors, display success message and redirect
+                                setStatus({ success: true });
+                                setSubmitting(false);
+                                dispatch(
+                                    openSnackbar({
+                                        open: true,
+                                        message: 'Your registration has been successfully completed.',
+                                        variant: 'alert',
+                                        alert: {
+                                            color: 'success'
+                                        },
+                                        close: true // Automatically close the snackbar
+                                    })
+                                );
+                                setTimeout(() => {
+                                    navigate('/login', { replace: true });
+                                }, 3000);
+                            }
                         }
                     } catch (err) {
-                        console.error(err);
+                        console.error('Registration error:', err);
+
                         if (scriptedRef.current) {
+                            // Check if the error is an Axios error with a response
+                            if (err.response && err.response.data && err.response.data.errors) {
+                                // Set the errors received from the server
+                                setErrors({ submit: err.response.data.errors });
+                            } else if (err.errors) {
+                                // Handle case where errors are in a different format
+                                setErrors({ submit: err.errors });
+                            } else {
+                                // Handle other types of errors
+                                setErrors({ submit: 'An unexpected error occurred. Please try again.' });
+                            }
+
                             setStatus({ success: false });
-                            setErrors({ submit: err.message });
                             setSubmitting(false);
                         }
                     }
@@ -130,47 +156,74 @@ const JWTRegister = ({ ...others }) => {
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="First Name"
+                                    label="Full Name"
                                     margin="normal"
-                                    name="firstName"
+                                    name="fullName"
                                     type="text"
-                                    value={values.firstName}
+                                    value={values.fullName}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                     sx={{ ...theme.typography.customInput }}
+                                    error={Boolean(touched.fullName && errors.fullName)}
+                                    helperText={touched.fullName && errors.fullName}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
                                 <TextField
                                     fullWidth
-                                    label="Last Name"
+                                    label="User Name"
                                     margin="normal"
-                                    name="lastName"
+                                    name="userName"
                                     type="text"
-                                    value={values.lastName}
+                                    value={values.userName}
                                     onBlur={handleBlur}
                                     onChange={handleChange}
                                     sx={{ ...theme.typography.customInput }}
+                                    error={Boolean(touched.userName && errors.userName)}
+                                    helperText={touched.userName && errors.userName}
                                 />
                             </Grid>
                         </Grid>
-                        <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
-                            <InputLabel htmlFor="outlined-adornment-email-register">Email Address / Username</InputLabel>
-                            <OutlinedInput
-                                id="outlined-adornment-email-register"
-                                type="email"
-                                value={values.email}
-                                name="email"
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                inputProps={{}}
-                            />
-                            {touched.email && errors.email && (
-                                <FormHelperText error id="standard-weight-helper-text--register">
-                                    {errors.email}
-                                </FormHelperText>
-                            )}
-                        </FormControl>
+                        <Grid container spacing={matchDownSM ? 0 : 2}>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    fullWidth
+                                    label="Telephone"
+                                    margin="normal"
+                                    name="telephone"
+                                    type="text"
+                                    value={values.telephone}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    sx={{ ...theme.typography.customInput }}
+                                    error={Boolean(touched.telephone && errors.telephone)}
+                                    helperText={touched.telephone && errors.telephone}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <FormControl
+                                    fullWidth
+                                    error={Boolean(touched.email && errors.email)}
+                                    sx={{ ...theme.typography.customInput }}
+                                >
+                                    <InputLabel htmlFor="outlined-adornment-email">Email Address</InputLabel>
+                                    <OutlinedInput
+                                        id="outlined-adornment-email"
+                                        type="email"
+                                        value={values.email}
+                                        name="email"
+                                        onBlur={handleBlur}
+                                        onChange={handleChange}
+                                        label="Email Address"
+                                    />
+                                    {touched.email && errors.email && (
+                                        <FormHelperText error id="standard-weight-helper-text-email">
+                                            {errors.email}
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+                            </Grid>
+                        </Grid>
 
                         <FormControl
                             fullWidth
@@ -268,7 +321,7 @@ const JWTRegister = ({ ...others }) => {
                                     size="large"
                                     type="submit"
                                     variant="contained"
-                                    style={{ backgroundColor: '#de0a42' }}
+                                    color="secondary"
                                 >
                                     Sign up
                                 </Button>
