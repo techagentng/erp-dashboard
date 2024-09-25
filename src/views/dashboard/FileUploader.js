@@ -5,16 +5,22 @@ import CloudUploadTwoToneIcon from '@mui/icons-material/CloudUploadTwoTone';
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { uploadTrailer } from 'services/trailerService';
+import { useDispatch } from 'react-redux';
+import { openSnackbar } from 'store/slices/snackbar';
+
 
 export default function FileUploader() {
     const theme = useTheme();
+    const dispatch = useDispatch();
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState(null);
     const [multipleFiles, setMultipleFiles] = useState([]);
     const [openModal, setOpenModal] = useState(false);
     const [modalFile, setModalFile] = useState(null);
     const [showProgress, setShowProgress] = useState(false);
-    const [progressValue, setProgressValue] = useState(0); // Initial progress value
+    const [progressValue, setProgressValue] = useState(0);
+    // const [timeoutId, setTimeoutId] = useState(null);
     const fileInputRef = useRef(null);
     const modalFileInputRef = useRef(null);
 
@@ -57,47 +63,106 @@ export default function FileUploader() {
     const handleOpenModal = () => setOpenModal(true);
     const handleCloseModal = () => setOpenModal(false);
 
-    const formik = useFormik({
-        initialValues: {
-            logLine: '',
-            productionYear: '',
-            star1: '',
-            star2: '',
-            star3: ''
-        },
-        validationSchema: Yup.object({
-            logLine: Yup.string().required('Log Line is required'),
-            productionYear: Yup.string().required('Production Year is required'),
-            star1: Yup.string().required('Star 1 is required'),
-            star2: Yup.string(),
-            star3: Yup.string()
-        }),
-        onSubmit: async (values) => {
-            setShowProgress(true); // Show progress bar on form submission
-            setProgressValue(45);  // Set progress value (placeholder)
-            
-            console.log('Submitted Data:', {
-                file,
-                multipleFiles,
-                ...values
-            });
-            setModalFile(null);
-            handleCloseModal();
-
-            // Simulate a delay before hiding the progress bar
-            setTimeout(() => {
-                setShowProgress(false);
-                setProgressValue(0); // Reset progress value
-            }, 183000);
-        }
-    });
-
     const handleUploadClick = () => {
         if (fileInputRef.current) {
             fileInputRef.current.click();
         }
     };
 
+    const formik = useFormik({
+        initialValues: {
+            log_line: '',
+            product_year: '',
+            star1: '',
+            star2: '',
+            star3: ''
+        },
+        validationSchema: Yup.object({
+            log_line: Yup.string().required('Log Line is required'),
+            product_year: Yup.string().required('Production Year is required'),
+            star1: Yup.string().required('Star 1 is required'),
+            star2: Yup.string(),
+            star3: Yup.string()
+        }),
+        onSubmit: async (values, { setErrors, setStatus, setSubmitting }) => {
+            handleCloseModal();
+            setShowProgress(true);
+            setProgressValue(0);
+
+            // if (timeoutId) {
+            //     clearTimeout(timeoutId);
+            // }
+
+            const trailerData = {
+                title: 'Sample Trailer',
+                description: 'This is a description of the trailer.',
+                duration: 60000,
+                log_line: values.log_line,
+                product_year: values.product_year,
+                star1: values.star1,
+                star2: values.star2,
+                Star3: values.star3,
+                videos: file, 
+                pictures: modalFile 
+            };
+            console.log('Trailer data to upload:', trailerData);
+
+            try {
+                await uploadTrailer(trailerData, (progress) => {
+                    setProgressValue(progress); 
+                });
+                console.log('Trailer uploaded successfully');
+
+                // Dispatch success message
+                dispatch(
+                    openSnackbar({
+                        open: true,
+                        message: 'Trailer uploaded successfully.',
+                        variant: 'alert',
+                        alert: {
+                            color: 'success'
+                        },
+                        close: true 
+                    })
+                );
+                // const newTimeoutId = setTimeout(() => {
+                //     setShowProgress(false);
+                //     setOpenModal(false);
+                // }, 2000);
+
+                // setTimeoutId(newTimeoutId);
+            } catch (error) {
+                console.error('Failed to upload trailer:', error.message);
+                if (error.response && error.response.data && error.response.data.errors) {
+                    setErrors({ submit: error.response.data.errors });
+                } else if (error.errors) {
+                    setErrors({ submit: error.errors });
+                } else {
+                    // Handle other types of errors
+                    setErrors({ submit: 'An unexpected error occurred. Please try again.' });
+                }
+
+                // Dispatch error message
+                dispatch(
+                    openSnackbar({
+                        open: true,
+                        message: 'Failed to upload trailer. Please check your input.',
+                        variant: 'alert',
+                        alert: {
+                            color: 'error'
+                        },
+                        close: true 
+                    })
+                );
+            } finally {
+                setShowProgress(false);
+                setProgressValue(0);
+                setOpenModal(false); 
+                setStatus({ success: false }); 
+                setSubmitting(false); 
+            }
+        }
+    });
     return (
         <Box
             sx={{
@@ -224,8 +289,8 @@ export default function FileUploader() {
                                 <TextField
                                     fullWidth
                                     label="Log Line"
-                                    name="logLine"
-                                    value={formik.values.logLine}
+                                    name="log_line"
+                                    value={formik.values.log_line}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     margin="normal"
@@ -237,13 +302,13 @@ export default function FileUploader() {
                                 <TextField
                                     fullWidth
                                     label="Production Year"
-                                    name="productionYear"
-                                    value={formik.values.productionYear}
+                                    name="product_year"
+                                    value={formik.values.product_year}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     margin="normal"
-                                    error={formik.touched.productionYear && Boolean(formik.errors.productionYear)}
-                                    helperText={formik.touched.productionYear && formik.errors.productionYear}
+                                    error={formik.touched.product_year && Boolean(formik.errors.product_year)}
+                                    helperText={formik.touched.product_year && formik.errors.product_year}
                                 />
                             </Grid>
                         </Grid>

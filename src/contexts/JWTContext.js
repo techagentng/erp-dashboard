@@ -43,15 +43,27 @@ export const JWTProvider = ({ children }) => {
             try {
                 const serviceToken = window.localStorage.getItem('serviceToken');
                 const serviceRole = window.localStorage.getItem('role_name');
-                if (serviceToken && serviceRole) {
-                    setSession(serviceToken, serviceRole);
-                    const response = await axios.get('/me');
-                    const isOnLine = await axios.get('/user/is_online');
+                const storedUser = window.localStorage.getItem('user'); // Check if user is stored
 
-                    const { valid } = isOnLine.data;
+                if (serviceToken && serviceRole && storedUser) {
+                    setSession(serviceToken, serviceRole);
+
+                    const user = JSON.parse(storedUser); // Parse stored user data
+                    dispatch({
+                        type: LOGIN,
+                        payload: {
+                            user: user,
+                            role_name: serviceRole,
+                            isLoggedIn: true,
+                            isInitialized: true
+                        }
+                    });
+                } else if (serviceToken && serviceRole) {
+                    // Fetch user info if not in localStorage
+                    const response = await axios.get('/me');
                     const { data } = response.data;
-                    localStorage.setItem('user', JSON.stringify(data));
-                    localStorage.setItem('online', JSON.stringify(valid));
+
+                    localStorage.setItem('user', JSON.stringify(data)); // Store user data
 
                     dispatch({
                         type: LOGIN,
@@ -63,7 +75,7 @@ export const JWTProvider = ({ children }) => {
                         }
                     });
                 } else {
-                    console.warn('Token or role missing from localStorage');
+                    console.warn('Token, role, or user missing from localStorage');
                     dispatch({ type: LOGOUT });
                 }
             } catch (err) {
@@ -85,7 +97,10 @@ export const JWTProvider = ({ children }) => {
             const response = await axios.post('/auth/login', { email, password });
             const { access_token, role_name, ...data } = response.data.data;
             const roleName = role_name || 'User';
-            setSession(access_token, role_name);
+
+            setSession(access_token, roleName);
+            localStorage.setItem('user', JSON.stringify(data)); // Store user data
+
             dispatch({
                 type: LOGIN,
                 payload: {
@@ -112,6 +127,8 @@ export const JWTProvider = ({ children }) => {
 
                 const userResponse = await axios.get('/me');
                 const { data } = userResponse.data;
+
+                localStorage.setItem('user', JSON.stringify(data)); // Store user data
 
                 dispatch({
                     type: LOGIN,
@@ -173,6 +190,7 @@ export const JWTProvider = ({ children }) => {
             console.error('Logout error:', error);
         }
         setSession(null);
+        localStorage.removeItem('user'); // Clear user from localStorage
         dispatch({ type: LOGOUT });
     };
 
