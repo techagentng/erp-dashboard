@@ -1,36 +1,27 @@
-// material-ui
+// import React, { useEffect, useCallback } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { Avatar, Box, useMediaQuery } from '@mui/material';
+import { Avatar, Box, useMediaQuery, Grid } from '@mui/material';
+import { useDispatch, useSelector } from 'store';
+import { openDrawer } from 'store/slices/menu';
 
-// project imports
-import LAYOUT_CONST from 'constant';
-import useConfig from 'hooks/useConfig';
 import LogoSection from '../LogoSection';
 import MobileSection from './MobileSection';
 import ProfileSection from './ProfileSection';
 import FullScreenSection from './FullScreenSection';
 import NotificationSection from './NotificationSection';
-
-import { useDispatch, useSelector } from 'store';
-import { openDrawer } from 'store/slices/menu';
-
-// assets
+import LAYOUT_CONST from 'constant';
+import useConfig from 'hooks/useConfig';
 import { IconMenu2 } from '@tabler/icons-react';
-
-// ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const Header = () => {
     const theme = useTheme();
-
     const dispatch = useDispatch();
     const { drawerOpen } = useSelector((state) => state.menu);
-
     const matchDownMd = useMediaQuery(theme.breakpoints.down('md'));
     const { layout } = useConfig();
 
     return (
         <>
-            {/* logo & toggler button */}
             <Box
                 sx={{
                     width: 228,
@@ -69,19 +60,17 @@ const Header = () => {
 
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ flexGrow: 1 }} />
+            <Grid item></Grid>
+            <Box sx={{ flexGrow: 1 }} />
 
-            {/* notification */}
             <NotificationSection />
-
-            {/* full sceen toggler */}
             <Box sx={{ display: { xs: 'none', lg: 'block' } }}>
                 <FullScreenSection />
             </Box>
-
-            {/* profile */}
+            {/* <Box sx={{ display: { xs: 'block' } }}>
+                <FloatingCart />
+            </Box> */}
             <ProfileSection />
-
-            {/* mobile header */}
             <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
                 <MobileSection />
             </Box>

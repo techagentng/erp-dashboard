@@ -9,7 +9,6 @@ import { uploadTrailer } from 'services/trailerService';
 import { useDispatch } from 'react-redux';
 import { openSnackbar } from 'store/slices/snackbar';
 
-
 export default function FileUploader() {
     const theme = useTheme();
     const dispatch = useDispatch();
@@ -20,7 +19,7 @@ export default function FileUploader() {
     const [modalFile, setModalFile] = useState(null);
     const [showProgress, setShowProgress] = useState(false);
     const [progressValue, setProgressValue] = useState(0);
-    // const [timeoutId, setTimeoutId] = useState(null);
+    const [pollingIntervalId, setPollingIntervalId] = useState(null);
     const fileInputRef = useRef(null);
     const modalFileInputRef = useRef(null);
 
@@ -61,7 +60,10 @@ export default function FileUploader() {
     };
 
     const handleOpenModal = () => setOpenModal(true);
-    const handleCloseModal = () => setOpenModal(false);
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        clearInterval(pollingIntervalId);
+    };
 
     const handleUploadClick = () => {
         if (fileInputRef.current) {
@@ -89,10 +91,6 @@ export default function FileUploader() {
             setShowProgress(true);
             setProgressValue(0);
 
-            // if (timeoutId) {
-            //     clearTimeout(timeoutId);
-            // }
-
             const trailerData = {
                 title: 'Sample Trailer',
                 description: 'This is a description of the trailer.',
@@ -101,36 +99,58 @@ export default function FileUploader() {
                 product_year: values.product_year,
                 star1: values.star1,
                 star2: values.star2,
-                Star3: values.star3,
-                videos: file, 
-                pictures: modalFile 
+                star3: values.star3, // Changed `Star3` to `star3`
+                videos: file,
+                pictures: modalFile
             };
             console.log('Trailer data to upload:', trailerData);
 
             try {
-                await uploadTrailer(trailerData, (progress) => {
-                    setProgressValue(progress); 
-                });
-                console.log('Trailer uploaded successfully');
+                const uploadResponse = await uploadTrailer(trailerData);
+                console.log('Upload initiated:', uploadResponse);
 
-                // Dispatch success message
-                dispatch(
-                    openSnackbar({
-                        open: true,
-                        message: 'Trailer uploaded successfully.',
-                        variant: 'alert',
-                        alert: {
-                            color: 'success'
-                        },
-                        close: true 
-                    })
-                );
-                // const newTimeoutId = setTimeout(() => {
-                //     setShowProgress(false);
-                //     setOpenModal(false);
-                // }, 2000);
+                const intervalId = setInterval(async () => {
+                    try {
+                        const progressResponse = await getUploadProgress(uploadResponse.uploadId); // Replace with actual API call to get progress
+                        const progress = progressResponse.progress;
 
-                // setTimeoutId(newTimeoutId);
+                        setProgressValue(progress);
+
+                        if (progress >= 100) {
+                            clearInterval(intervalId);
+                            setProgressValue(100);
+                            setShowProgress(false);
+
+                            dispatch(
+                                openSnackbar({
+                                    open: true,
+                                    message: 'Trailer uploaded successfully.',
+                                    variant: 'alert',
+                                    alert: {
+                                        color: 'success'
+                                    },
+                                    close: true
+                                })
+                            );
+                        }
+                    } catch (progressError) {
+                        console.error('Error getting upload progress:', progressError);
+                        clearInterval(intervalId);
+
+                        dispatch(
+                            openSnackbar({
+                                open: true,
+                                message: 'Error getting upload progress. Please try again.',
+                                variant: 'alert',
+                                alert: {
+                                    color: 'error'
+                                },
+                                close: true
+                            })
+                        );
+                    }
+                }, 1000);
+                setPollingIntervalId(intervalId);
             } catch (error) {
                 console.error('Failed to upload trailer:', error.message);
                 if (error.response && error.response.data && error.response.data.errors) {
@@ -138,11 +158,9 @@ export default function FileUploader() {
                 } else if (error.errors) {
                     setErrors({ submit: error.errors });
                 } else {
-                    // Handle other types of errors
                     setErrors({ submit: 'An unexpected error occurred. Please try again.' });
                 }
 
-                // Dispatch error message
                 dispatch(
                     openSnackbar({
                         open: true,
@@ -151,18 +169,19 @@ export default function FileUploader() {
                         alert: {
                             color: 'error'
                         },
-                        close: true 
+                        close: true
                     })
                 );
             } finally {
                 setShowProgress(false);
                 setProgressValue(0);
-                setOpenModal(false); 
-                setStatus({ success: false }); 
-                setSubmitting(false); 
+                setOpenModal(false);
+                setStatus({ success: false });
+                setSubmitting(false);
             }
         }
     });
+
     return (
         <Box
             sx={{
