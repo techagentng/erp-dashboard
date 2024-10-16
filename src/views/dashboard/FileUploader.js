@@ -38,9 +38,9 @@ export default function FileUploader() {
         const droppedFiles = Array.from(e.dataTransfer.files);
         setMultipleFiles(droppedFiles);
         setFile(droppedFiles[0]);
+        formik.setFieldValue('videos', droppedFiles);
         setOpenModal(true);
     };
-
     const handleModalUploadClick = () => {
         if (modalFileInputRef.current) {
             modalFileInputRef.current.click();
@@ -50,12 +50,14 @@ export default function FileUploader() {
     const handleModalFileChange = (e) => {
         const selectedModalFile = e.target.files[0];
         setModalFile(selectedModalFile);
+        formik.setFieldValue('pictures', [selectedModalFile]);
     };
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
         setMultipleFiles(selectedFiles);
         setFile(selectedFiles[0]);
+        formik.setFieldValue('videos', selectedFiles); // Update formik values
         setOpenModal(true);
     };
 
@@ -77,41 +79,59 @@ export default function FileUploader() {
             product_year: '',
             star1: '',
             star2: '',
-            star3: ''
+            star3: '',
+            videos: [],
+            pictures: []
         },
         validationSchema: Yup.object({
             log_line: Yup.string().required('Log Line is required'),
             product_year: Yup.string().required('Production Year is required'),
             star1: Yup.string().required('Star 1 is required'),
             star2: Yup.string(),
-            star3: Yup.string()
+            star3: Yup.string(),
+            videos: Yup.array().min(1, 'At least one video is required'),
+            pictures: Yup.array().min(1, 'At least one picture is required')
         }),
+
         onSubmit: async (values, { setErrors, setStatus, setSubmitting }) => {
-            handleCloseModal();
-            setShowProgress(true);
-            setProgressValue(0);
-
-            const trailerData = {
-                title: 'Sample Trailer',
-                description: 'This is a description of the trailer.',
-                duration: 60000,
-                log_line: values.log_line,
-                product_year: values.product_year,
-                star1: values.star1,
-                star2: values.star2,
-                star3: values.star3, // Changed `Star3` to `star3`
-                videos: file,
-                pictures: modalFile
-            };
-            console.log('Trailer data to upload:', trailerData);
-
             try {
-                const uploadResponse = await uploadTrailer(trailerData);
+                // Handle form close and initiate upload
+                handleCloseModal();
+                setShowProgress(true);
+                setProgressValue(0);
+
+                // Prepare FormData
+                const formData = new FormData();
+                formData.append('title', 'Sample Trailer');
+                formData.append('description', 'This is a description of the trailer.');
+                formData.append('duration', 60000); // Assuming duration in ms
+                formData.append('log_line', values.log_line);
+                formData.append('product_year', values.product_year);
+                formData.append('star1', values.star1);
+                formData.append('star2', values.star2);
+                formData.append('star3', values.star3);
+
+                // Append video files
+                values.videos.forEach((file) => {
+                    formData.append('videos[]', file);
+                });
+
+                // Append picture files
+                values.pictures.forEach((file) => {
+                    formData.append('pictures[]', file);
+                });
+
+                for (let [key, value] of formData.entries()) {
+                    console.log(`${key}:`, value);
+                }
+
+                const uploadResponse = await uploadTrailer(formData);
                 console.log('Upload initiated:', uploadResponse);
 
+                // Poll for progress updates
                 const intervalId = setInterval(async () => {
                     try {
-                        const progressResponse = await getUploadProgress(uploadResponse.uploadId); // Replace with actual API call to get progress
+                        const progressResponse = await getUploadProgress(uploadResponse.uploadId);
                         const progress = progressResponse.progress;
 
                         setProgressValue(progress);
@@ -126,9 +146,7 @@ export default function FileUploader() {
                                     open: true,
                                     message: 'Trailer uploaded successfully.',
                                     variant: 'alert',
-                                    alert: {
-                                        color: 'success'
-                                    },
+                                    alert: { color: 'success' },
                                     close: true
                                 })
                             );
@@ -142,9 +160,7 @@ export default function FileUploader() {
                                 open: true,
                                 message: 'Error getting upload progress. Please try again.',
                                 variant: 'alert',
-                                alert: {
-                                    color: 'error'
-                                },
+                                alert: { color: 'error' },
                                 close: true
                             })
                         );
@@ -166,9 +182,7 @@ export default function FileUploader() {
                         open: true,
                         message: 'Failed to upload trailer. Please check your input.',
                         variant: 'alert',
-                        alert: {
-                            color: 'error'
-                        },
+                        alert: { color: 'error' },
                         close: true
                     })
                 );
@@ -313,8 +327,8 @@ export default function FileUploader() {
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     margin="normal"
-                                    error={formik.touched.logLine && Boolean(formik.errors.logLine)}
-                                    helperText={formik.touched.logLine && formik.errors.logLine}
+                                    error={formik.touched.log_line && Boolean(formik.errors.log_line)}
+                                    helperText={formik.touched.log_line && formik.errors.log_line}
                                 />
                             </Grid>
                             <Grid item xs={12} sm={6}>
