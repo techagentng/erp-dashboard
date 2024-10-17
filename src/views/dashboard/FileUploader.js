@@ -5,7 +5,7 @@ import CloudUploadTwoToneIcon from '@mui/icons-material/CloudUploadTwoTone';
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { uploadTrailer } from 'services/trailerService';
+import { uploadTrailer, getUploadProgress } from 'services/trailerService';
 import { useDispatch } from 'react-redux';
 import { openSnackbar } from 'store/slices/snackbar';
 

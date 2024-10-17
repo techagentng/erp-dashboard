@@ -1,8 +1,7 @@
 import axios from 'axios';
 
 export const uploadTrailer = (formData, onUploadProgress) => {
-    const serviceToken = localStorage.getItem('serviceToken'); // Retrieve serviceToken from localStorage
-    console.log('Service Tokenxxxxxxxxx:', serviceToken);
+    const serviceToken = localStorage.getItem('serviceToken');
     return axios
         .post(`${process.env.REACT_APP_API_URL}/upload-trailer`, formData, {
             headers: {
@@ -26,5 +25,27 @@ export const uploadTrailer = (formData, onUploadProgress) => {
         .catch((error) => {
             console.error('API error:', error);
             throw new Error(error.response?.data?.message || 'An error occurred while uploading trailer');
+        });
+};
+
+export const getUploadProgress = (sessionID) => {
+    const serviceToken = localStorage.getItem('serviceToken');
+
+    return axios
+        .get(`${process.env.REACT_APP_API_URL}/upload/progress/${sessionID}`, {
+            headers: {
+                Authorization: `Bearer ${serviceToken}`
+            }
+        })
+        .then((response) => {
+            if (response.status === 200) {
+                return response.data;
+            } else {
+                throw new Error('Failed to get upload progress');
+            }
+        })
+        .catch((error) => {
+            console.error('API error while fetching progress:', error);
+            throw new Error(error.response?.data?.message || 'An error occurred while fetching upload progress');
         });
 };
