@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const uploadTrailer = (formData, onUploadProgress) => {
     const serviceToken = localStorage.getItem('serviceToken'); // Retrieve serviceToken from localStorage
-
+    console.log('Service Tokenxxxxxxxxx:', serviceToken);
     return axios
         .post(`${process.env.REACT_APP_API_URL}/upload-trailer`, formData, {
             headers: {
