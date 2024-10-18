@@ -121,26 +121,35 @@ export default function FileUploader() {
                     formData.append('pictures[]', file);
                 });
 
+                // Logging form data for debugging
                 for (let [key, value] of formData.entries()) {
                     console.log(`${key}:`, value);
                 }
 
+                // Start the trailer upload
                 const uploadResponse = await uploadTrailer(formData);
                 console.log('Upload initiated:', uploadResponse);
 
-                // Poll for progress updates
+                // Extract sessionID (or uploadId) from the response
+                const sessionID = uploadResponse.sessionID || uploadResponse.uploadId;
+
+                // Poll for progress updates every second
                 const intervalId = setInterval(async () => {
                     try {
-                        const progressResponse = await getUploadProgress(uploadResponse.uploadId);
+                        // Fetch upload progress using sessionID
+                        const progressResponse = await getUploadProgress(sessionID);
                         const progress = progressResponse.progress;
 
+                        // Update progress bar
                         setProgressValue(progress);
 
+                        // Check if upload is complete
                         if (progress >= 100) {
                             clearInterval(intervalId);
                             setProgressValue(100);
                             setShowProgress(false);
 
+                            // Show success message
                             dispatch(
                                 openSnackbar({
                                     open: true,
@@ -155,6 +164,7 @@ export default function FileUploader() {
                         console.error('Error getting upload progress:', progressError);
                         clearInterval(intervalId);
 
+                        // Show error message if progress fetching fails
                         dispatch(
                             openSnackbar({
                                 open: true,
@@ -166,9 +176,13 @@ export default function FileUploader() {
                         );
                     }
                 }, 1000);
+
+                // Store interval ID to clear it later if necessary
                 setPollingIntervalId(intervalId);
             } catch (error) {
                 console.error('Failed to upload trailer:', error.message);
+
+                // Handle various error cases and show relevant error messages
                 if (error.response && error.response.data && error.response.data.errors) {
                     setErrors({ submit: error.response.data.errors });
                 } else if (error.errors) {
@@ -177,6 +191,7 @@ export default function FileUploader() {
                     setErrors({ submit: 'An unexpected error occurred. Please try again.' });
                 }
 
+                // Show failure snackbar
                 dispatch(
                     openSnackbar({
                         open: true,
@@ -187,6 +202,7 @@ export default function FileUploader() {
                     })
                 );
             } finally {
+                // Ensure UI resets after process completes
                 setShowProgress(false);
                 setProgressValue(0);
                 setOpenModal(false);

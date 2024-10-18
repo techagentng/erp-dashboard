@@ -32,9 +32,12 @@ export const getUploadProgress = (sessionID) => {
     const serviceToken = localStorage.getItem('serviceToken');
 
     return axios
-        .get(`${process.env.REACT_APP_API_URL}/upload/progress/${sessionID}`, {
+        .get(`${process.env.REACT_APP_API_URL}/upload/progress`, {
             headers: {
                 Authorization: `Bearer ${serviceToken}`
+            },
+            params: {
+                sessionID: sessionID // Send sessionID as a query parameter
             }
         })
         .then((response) => {
