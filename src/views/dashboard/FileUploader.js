@@ -135,6 +135,7 @@ export default function FileUploader() {
 
                 // Poll for progress updates every second
                 const intervalId = setInterval(async () => {
+                    console.log('xxxxxxxxxxxxxxxs-id', sessionID);
                     try {
                         // Fetch upload progress using sessionID
                         const progressResponse = await getUploadProgress(sessionID);
