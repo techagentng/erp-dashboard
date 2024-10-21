@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import { uploadTrailer, getUploadProgress } from 'services/trailerService';
 import { useDispatch } from 'react-redux';
 import { openSnackbar } from 'store/slices/snackbar';
+import { v4 as uuidv4 } from 'uuid';
 
 export default function FileUploader() {
     const theme = useTheme();
@@ -130,12 +131,12 @@ export default function FileUploader() {
                 const uploadResponse = await uploadTrailer(formData);
                 console.log('Upload initiated:', uploadResponse);
 
-                // Extract sessionID (or uploadId) from the response
-                const sessionID = uploadResponse.sessionID || uploadResponse.uploadId;
+                // Generate a session ID
+                const sessionID = uuidv4();
 
                 // Poll for progress updates every second
                 const intervalId = setInterval(async () => {
-                    console.log('xxxxxxxxxxxxxxxs-id', sessionID);
+                    console.log('Polling for session ID:', sessionID);
                     try {
                         // Fetch upload progress using sessionID
                         const progressResponse = await getUploadProgress(sessionID);

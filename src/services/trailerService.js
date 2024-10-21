@@ -32,12 +32,9 @@ export const getUploadProgress = (sessionID) => {
     const serviceToken = localStorage.getItem('serviceToken');
 
     return axios
-        .get(`${process.env.REACT_APP_API_URL}/upload/progress`, {
+        .get(`${process.env.REACT_APP_API_URL}/upload/progress/${sessionID}`, {  // Pass sessionID in the URL path
             headers: {
                 Authorization: `Bearer ${serviceToken}`
-            },
-            params: {
-                sessionID: sessionID // Send sessionID as a query parameter
             }
         })
         .then((response) => {
@@ -52,3 +49,4 @@ export const getUploadProgress = (sessionID) => {
             throw new Error(error.response?.data?.message || 'An error occurred while fetching upload progress');
         });
 };
+
